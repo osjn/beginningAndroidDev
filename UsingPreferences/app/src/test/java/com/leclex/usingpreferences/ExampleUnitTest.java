@@ -1,4 +1,4 @@
-package com.example.xmh.files;
+package com.leclex.usingpreferences;
 
 import org.junit.Test;
 

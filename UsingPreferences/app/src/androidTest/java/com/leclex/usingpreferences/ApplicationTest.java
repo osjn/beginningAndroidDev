@@ -1,4 +1,4 @@
-package com.example.xmh.usingpreferences;
+package com.leclex.usingpreferences;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
