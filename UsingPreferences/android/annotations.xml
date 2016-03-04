@@ -1,0 +1,5 @@
+<root>
+  <item name='android.Manifest.permission READ_CONTACTS'>
+    <annotation name='java.lang.annotation.Deprecated' />
+  </item>
+</root>
