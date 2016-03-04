@@ -62,6 +62,9 @@ public class BooksProvider extends ContentProvider {
         // arg1 = selection
         // arg2 = selectionArgs
         int count = 0;
+        switch (uriMatcher.match(arg0)) {
+
+        }
 
         return count;
     }
