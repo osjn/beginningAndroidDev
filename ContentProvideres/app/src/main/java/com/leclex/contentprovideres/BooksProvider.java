@@ -1,6 +1,7 @@
 package com.leclex.contentprovideres;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
@@ -9,6 +10,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.text.TextUtils;
+
+import java.sql.SQLException;
 
 public class BooksProvider extends ContentProvider {
     static final String PROVIDER_NAME = "com.leclex.provider.Books";
@@ -63,19 +67,55 @@ public class BooksProvider extends ContentProvider {
         // arg2 = selectionArgs
         int count = 0;
         switch (uriMatcher.match(arg0)) {
-
+            case BOOKS:
+                count = booksDB.delete(DATABASE_TABLE, arg1, arg2);
+                break;
+            case BOOKS_ID:
+                String id = arg0.getPathSegments().get(1);
+                count = booksDB.delete(DATABASE_TABLE,
+                        _ID + " = " + id +
+                                (!TextUtils.isEmpty(arg1) ? "AND (" +
+                                arg1 + ')' : ""), arg2);
+                break;
+            default: throw new IllegalArgumentException("Unknown URI " + arg0);
         }
+        getContext().getContentResolver().notifyChange(arg0, null);
 
         return count;
     }
 
     @Override
     public String getType(Uri uri) {
-        return null;
+        switch (uriMatcher.match(uri)) {
+            // get all books
+            case BOOKS:
+                return "vnd.android.cursor.dir/vnd.leclex.books";
+
+            // get a particular book
+            case BOOKS_ID:
+                return "vnd.android.cursor.item/vnd.leclex.books";
+
+            default:
+                throw new IllegalArgumentException("Unsupported URI: " + uri);
+        }
     }
 
     @Override
-    public  Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(Uri uri, ContentValues values) {
+        try {
+            // add a new book
+            long rowID = booksDB.insert(DATABASE_TABLE, "", values);
+            // if added successfully
+            if (rowID > 0) {
+                Uri _uri = ContentUris.withAppendedId(CONTENT_URI, rowID);
+                getContext().getContentResolver().notifyChange(_uri, null);
+                return _uri;
+            }
+            throw new SQLException("Failed to insert row into " + uri);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return uri;
     }
 
@@ -112,7 +152,21 @@ public class BooksProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         int count = 0;
+        switch (uriMatcher.match(uri)) {
+            case BOOKS:
+                count = booksDB.update(DATABASE_TABLE, values, selection, selectionArgs);
+                break;
+            case BOOKS_ID:
+                count = booksDB.update(DATABASE_TABLE, values,
+                        _ID + " = " + uri.getPathSegments().get(1) +
+                        (!TextUtils.isEmpty(selection) ? " AND (" +
+                        selection + ')' : ""), selectionArgs);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown URI " + uri);
+        }
 
+        getContext().getContentResolver().notifyChange(uri, null);
         return count;
     }
 }
