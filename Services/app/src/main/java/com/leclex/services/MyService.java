@@ -9,8 +9,14 @@ import android.widget.Toast;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MyService extends Service {
+    int counter = 0;
+    static final int UPDATE_INTERVAL = 1000;
+    private Timer timer = new Timer();
+
     @Override
     public IBinder onBind(Intent arg0) {
         return null;
@@ -21,6 +27,8 @@ public class MyService extends Service {
         // We want this service to continue running until it is explicitly
         // stopped, so return sticky.
 //        Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
+
+        doSomethingRepeatedly();
 
         try {
 //            int result = DownloadFile(new URL("http://www.amazon.com/somefile.pdf"));
@@ -34,6 +42,15 @@ public class MyService extends Service {
             e.printStackTrace();
         }
         return START_STICKY;
+    }
+
+    private void doSomethingRepeatedly() {
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                Log.d("MyService", String.valueOf(++counter));
+            }
+        }, 0, UPDATE_INTERVAL);
     }
 
     private int DownloadFile(URL url) {
