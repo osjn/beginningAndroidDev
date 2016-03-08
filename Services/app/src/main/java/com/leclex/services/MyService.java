@@ -3,11 +3,11 @@ package com.leclex.services;
 import android.app.Service;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -16,31 +16,47 @@ public class MyService extends Service {
     int counter = 0;
     static final int UPDATE_INTERVAL = 1000;
     private Timer timer = new Timer();
+    URL[] urls;
+    private final IBinder binder = new MyBinder();
+
+    public class MyBinder extends Binder {
+        MyService getService() {
+            return MyService.this;
+        }
+    }
 
     @Override
     public IBinder onBind(Intent arg0) {
-        return null;
+        return binder;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // We want this service to continue running until it is explicitly
         // stopped, so return sticky.
-//        Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
 
-        doSomethingRepeatedly();
+//        doSomethingRepeatedly();
 
-        try {
+//        try {
 //            int result = DownloadFile(new URL("http://www.amazon.com/somefile.pdf"));
 //            Toast.makeText(getBaseContext(), "Downloaded " + result + "bytes", Toast.LENGTH_SHORT).show();
-            new DoBackgroundTask().execute(
-                    new URL("http://www.amazon.com/somefile.pdf"),
-                    new URL("http://www.wrox.com/somefile.pdf"),
-                    new URL("http://www.google.com/somefile.pdf"),
-                    new URL("http://www.leclex.com/somefile.pdf"));
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+//            new DoBackgroundTask().execute(
+//                    new URL("http://www.amazon.com/somefile.pdf"),
+//                    new URL("http://www.wrox.com/somefile.pdf"),
+//                    new URL("http://www.google.com/somefile.pdf"),
+//                    new URL("http://www.leclex.com/somefile.pdf"));
+//
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        }
+
+//        Object[] objUrls = (Object[]) intent.getExtras().get("URLs");
+//        URL[] urls = new URL[objUrls.length];
+//        for (int i = 0; i < objUrls.length - 1; i++) {
+//            urls[i] = (URL) objUrls[i];
+//        }
+        new DoBackgroundTask().execute(urls);
         return START_STICKY;
     }
 
